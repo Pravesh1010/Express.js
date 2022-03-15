@@ -3,7 +3,7 @@ import express from "express";
 import { MongoClient } from "mongodb";
 const app = express();
 
-const PORT = 5000;
+const PORT = process.env.PORT;
 
 const movies = [
   {
