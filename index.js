@@ -203,7 +203,7 @@ async function createConnection() {
   console.log("Mongo is connected ✌");
   return client;
 }
-const client = await createConnection();
+const client = await createConnection();  
 // Mongo connection done //
 
 app.get("/", function (request, response) {
