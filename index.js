@@ -3,6 +3,7 @@ import express from "express";
 import { MongoClient } from "mongodb";
 import cors from "cors";
 import dotenv from "dotenv";
+import bcrypt from "bcrypt";
 dotenv.config();
 const app = express();
 
@@ -292,3 +293,30 @@ app.post("/pizzas", async function (request, response) {
 
 
 app.listen(PORT, () => console.log(`Server Started in ${PORT}`));
+
+
+app.post("/users/signup", async function (request, response) {
+  const {username, password} = request.body;
+  const hashPassword = await genPassword(password);
+
+  const newUser = {
+    username: username,
+    password: hashPassword,
+  }
+
+  const result = await client
+    .db("firstmongo")
+    .collection("users")
+    .insertOne(newUser);
+  response.send(result);
+});
+
+
+async function genPassword(password){
+  const salt = await bcrypt.genSalt(10);
+  const hashPassword = await bcrypt.hash(password, salt);
+  return hashPassword;
+}
+
+
+
