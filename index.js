@@ -4,6 +4,8 @@ import { MongoClient } from "mongodb";
 import cors from "cors";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { auth } from "./middleware/auth.js";
 dotenv.config();
 const app = express();
 
@@ -86,7 +88,13 @@ const pizzas = [
   {
     name: "Pepper Barbecue Chicken",
     varients: ["small", "medium", "large"],
-    base:["Whole Wheat", "Refined Wheat", "Italian Bread", "Thin Crust", "Cheese Crust"],
+    base: [
+      "Whole Wheat",
+      "Refined Wheat",
+      "Italian Bread",
+      "Thin Crust",
+      "Cheese Crust",
+    ],
     prices: [
       {
         small: 200,
@@ -94,7 +102,7 @@ const pizzas = [
         large: 400,
       },
     ],
-  
+
     category: "nonveg",
     image:
       "https://www.dominos.co.in/theme2/front/images/menu-images/my-vegpizza.jpg",
@@ -103,7 +111,13 @@ const pizzas = [
   {
     name: "Golden Corn Pizza",
     varients: ["small", "medium", "large"],
-    base:["Whole Wheat", "Refined Wheat", "Italian Bread", "Thin Crust", "Cheese Crust"],
+    base: [
+      "Whole Wheat",
+      "Refined Wheat",
+      "Italian Bread",
+      "Thin Crust",
+      "Cheese Crust",
+    ],
     prices: [
       {
         small: 200,
@@ -120,7 +134,13 @@ const pizzas = [
   {
     name: "Double Cheese Margherita Pizza",
     varients: ["small", "medium", "large"],
-    base:["Whole Wheat", "Refined Wheat", "Italian Bread", "Thin Crust", "Cheese Crust"],
+    base: [
+      "Whole Wheat",
+      "Refined Wheat",
+      "Italian Bread",
+      "Thin Crust",
+      "Cheese Crust",
+    ],
     prices: [
       {
         small: 200,
@@ -137,7 +157,13 @@ const pizzas = [
   {
     name: "Jalapeno & Red Paprika Pizza",
     varients: ["small", "medium", "large"],
-    base:["Whole Wheat", "Refined Wheat", "Italian Bread", "Thin Crust", "Cheese Crust"],
+    base: [
+      "Whole Wheat",
+      "Refined Wheat",
+      "Italian Bread",
+      "Thin Crust",
+      "Cheese Crust",
+    ],
     prices: [
       {
         small: 200,
@@ -154,7 +180,13 @@ const pizzas = [
   {
     name: "Non Veg Supreme",
     varients: ["small", "medium", "large"],
-    base:["Whole Wheat", "Refined Wheat", "Italian Bread", "Thin Crust", "Cheese Crust"],
+    base: [
+      "Whole Wheat",
+      "Refined Wheat",
+      "Italian Bread",
+      "Thin Crust",
+      "Cheese Crust",
+    ],
     prices: [
       {
         small: 200,
@@ -171,7 +203,13 @@ const pizzas = [
   {
     name: "Margerita",
     varients: ["small", "medium", "large"],
-    base:["Whole Wheat", "Refined Wheat", "Italian Bread", "Thin Crust", "Cheese Crust"],
+    base: [
+      "Whole Wheat",
+      "Refined Wheat",
+      "Italian Bread",
+      "Thin Crust",
+      "Cheese Crust",
+    ],
     prices: [
       {
         small: 200,
@@ -187,16 +225,14 @@ const pizzas = [
   },
 ];
 
-export default pizzas
+export default pizzas;
 // middleware -> intercept -> converting body to json
 app.use(express.json());
-
 
 // Creating mongo connection //
 // const MONGO_URL = "mongodb://localhost";
 
 const MONGO_URL = process.env.MONGO_URL;
-
 
 async function createConnection() {
   const client = new MongoClient(MONGO_URL);
@@ -204,7 +240,7 @@ async function createConnection() {
   console.log("Mongo is connected ✌");
   return client;
 }
-const client = await createConnection();  
+const client = await createConnection();
 // Mongo connection done //
 
 app.get("/", function (request, response) {
@@ -214,7 +250,6 @@ app.get("/", function (request, response) {
 // app.get("/movies", function (request, response) {
 //   response.send(movies);
 // });
-
 
 app.get("/movies/:id", async function (request, response) {
   const { id } = request.params;
@@ -228,7 +263,6 @@ app.get("/movies/:id", async function (request, response) {
     : response.status(404).send({ message: "No such movie found😢" });
 });
 
-
 app.post("/movies", async function (request, response) {
   const data = request.body;
   console.log(data);
@@ -239,6 +273,11 @@ app.post("/movies", async function (request, response) {
   response.send(result);
 });
 
+// const auth = (request, response, next) => {
+//   const token = request.header("x-auth-token");
+//   console.log(token);
+//   next();
+// }
 // cursor -> pagination -> convert to Array (toArray)
 app.get("/movies", async function (request, response) {
   const movies = await client
@@ -260,26 +299,25 @@ app.delete("/movies/:id", async function (request, response) {
 });
 
 app.put("/movies/:id", async function (request, response) {
-    const { id } = request.params;
-    const updateData = request.body;
-    // const movie = movies.find((mv) => mv.id == id)
-    const result = await client
-      .db("firstmongo")
-      .collection("movies")
-      .updateOne({ id: id }, {$set: updateData});
-    response.send(result);
-  });
-  
+  const { id } = request.params;
+  const updateData = request.body;
+  // const movie = movies.find((mv) => mv.id == id)
+  const result = await client
+    .db("firstmongo")
+    .collection("movies")
+    .updateOne({ id: id }, { $set: updateData });
+  response.send(result);
+});
 
-  // Pizza App Backend
-app.get("/pizzas", async function(request, response){
+// Pizza App Backend
+app.get("/pizzas", async function (request, response) {
   const pizzas = await client
     .db("firstmongo")
     .collection("pizzas")
     .find({})
     .toArray();
   response.send(pizzas);
-})
+});
 
 app.post("/pizzas", async function (request, response) {
   const data = request.body;
@@ -291,18 +329,16 @@ app.post("/pizzas", async function (request, response) {
   response.send(result);
 });
 
-
 app.listen(PORT, () => console.log(`Server Started in ${PORT}`));
 
-
 app.post("/users/signup", async function (request, response) {
-  const {username, password} = request.body;
+  const { username, password } = request.body;
   const hashPassword = await genPassword(password);
 
   const newUser = {
     username: username,
     password: hashPassword,
-  }
+  };
 
   const result = await client
     .db("firstmongo")
@@ -311,12 +347,31 @@ app.post("/users/signup", async function (request, response) {
   response.send(result);
 });
 
-
-async function genPassword(password){
+async function genPassword(password) {
   const salt = await bcrypt.genSalt(10);
   const hashPassword = await bcrypt.hash(password, salt);
   return hashPassword;
 }
 
+app.post("/users/login", async function (request, response) {
+  const { username, password } = request.body;
 
-
+  const userFromDb = await client
+    .db("firstmongo")
+    .collection("users")
+    .findOne({ username: username });
+  console.log(userFromDb);
+  if (!userFromDb) {
+    response.status(401).send({ message: "Invaild Credentials" });
+  } else {
+    const storedPassword = userFromDb.password; //hashed password
+    const isPasswordMatch = await bcrypt.compare(password, storedPassword);
+    console.log(isPasswordMatch);
+    if(isPasswordMatch){
+      const token = jwt.sign({id: userFromDb._id}, process.env.SECRET_KEY);
+      response.send({message: "Successfull login", token: token});
+    }else{
+      response.send({message: "Invalid Credentials"})
+    }
+  }
+});
