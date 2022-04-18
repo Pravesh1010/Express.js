@@ -331,21 +331,51 @@ app.post("/pizzas", async function (request, response) {
 
 app.listen(PORT, () => console.log(`Server Started in ${PORT}`));
 
-app.post("/users/signup", async function (request, response) {
-  const { username, password } = request.body;
-  const hashPassword = await genPassword(password);
+app.get("/users", async function (request, response) {
+  const users = await client
+    .db("firstmongo")
+    .collection("users")
+    .find({})
+    .toArray();
+  response.send(users);
+});
 
-  const newUser = {
-    username: username,
-    password: hashPassword,
-  };
+app.post("/users/signup", async function (request, response) {
+  const user = request.body;
+  // const { username, password } = request.body;
+  // const hashPassword = await genPassword(password);
+
+  // const newUser = {
+  //   username: username,
+  //   password: hashPassword,
+  // };
 
   const result = await client
     .db("firstmongo")
     .collection("users")
-    .insertOne(newUser);
+    .insertOne(user);
   response.send(result);
 });
+
+// orders database//////////////////////////////////////
+app.post("/orders", async function (request, response) {
+  const order = request.body;
+
+  const result = await client
+    .db("firstmongo")
+    .collection("orders")
+    .insertOne(order);
+  response.send(result);
+});
+app.get("/orders/pizza", async function (request, response) {
+  const order = await client
+    .db("firstmongo")
+    .collection("orders")
+    .find({})
+    .toArray();
+  response.send(order);
+});
+// orders database/////////////////////////////////////////
 
 async function genPassword(password) {
   const salt = await bcrypt.genSalt(10);
@@ -367,11 +397,11 @@ app.post("/users/login", async function (request, response) {
     const storedPassword = userFromDb.password; //hashed password
     const isPasswordMatch = await bcrypt.compare(password, storedPassword);
     console.log(isPasswordMatch);
-    if(isPasswordMatch){
-      const token = jwt.sign({id: userFromDb._id}, process.env.SECRET_KEY);
-      response.send({message: "Successfull login", token: token});
-    }else{
-      response.send({message: "Invalid Credentials"})
+    if (isPasswordMatch) {
+      const token = jwt.sign({ id: userFromDb._id }, process.env.SECRET_KEY);
+      response.send({ message: "Successfull login", token: token });
+    } else {
+      response.send({ message: "Invalid Credentials" });
     }
   }
 });
