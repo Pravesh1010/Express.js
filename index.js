@@ -6,6 +6,11 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { auth } from "./middleware/auth.js";
+import { UUID } from "bson";
+import Stripe from 'stripe';
+const stripe = new Stripe('sk_test_51KpbhwSHVuORzoRvIbEyrRF37FKMpVK34fCAkNmJBv8RRK5GUHpk9k52M0SYSxahpuowO4dSY0MQIaAOkJG86jRm00e5DgdnRe');
+import { v4 as uuidv4 } from 'uuid';
+
 dotenv.config();
 const app = express();
 
@@ -269,7 +274,7 @@ app.post("/movies", async function (request, response) {
   const result = await client
     .db("firstmongo")
     .collection("movies")
-    .insertMany(data);
+    .insertOne(data);
   response.send(result);
 });
 
@@ -325,7 +330,7 @@ app.post("/pizzas", async function (request, response) {
   const result = await client
     .db("firstmongo")
     .collection("pizzas")
-    .insertMany(data);
+    .insertOne(data);
   response.send(result);
 });
 
@@ -367,6 +372,31 @@ app.post("/orders", async function (request, response) {
     .insertOne(order);
   response.send(result);
 });
+// app.post("/placed/orders", async function (request, response) {
+//   const order = request.body;
+//   try{
+//     const customer = await stripe.customers.create({
+//       email: order.email,
+//       source: order.id
+//     })
+
+//     const payment = await stripe.charges.create({
+//       currency: 'inr',
+//       customer: customer.id,
+//       receipt_email: token.email
+//     }, {
+//       idempotencyKey : uuidv4()
+//     })
+
+//     if(payment){
+//       response.send("Payment done")
+//     }else{
+//       response.send("payment failed")
+//     }
+//   }catch( error ){
+//     response.send("error")
+//   }
+// });
 app.get("/orders/pizza", async function (request, response) {
   const order = await client
     .db("firstmongo")
