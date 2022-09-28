@@ -15,6 +15,7 @@ dotenv.config();
 const app = express();
 
 const PORT = process.env.PORT;
+// const PORT = 5000;
 
 app.use(cors());
 
@@ -331,7 +332,7 @@ app.post("/pizzas", async function (request, response) {
     .db("firstmongo")
     .collection("pizzas")
     .insertOne(data);
-  response.send(result);
+  response.send(result); 
 });
 
 app.listen(PORT, () => console.log(`Server Started in ${PORT}`));
@@ -405,7 +406,7 @@ app.get("/orders/pizza", async function (request, response) {
     .toArray();
   response.send(order);
 });
-// orders database/////////////////////////////////////////
+// orders database/////////////////////////////////////
 
 async function genPassword(password) {
   const salt = await bcrypt.genSalt(10);
